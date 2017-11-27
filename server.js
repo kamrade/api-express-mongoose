@@ -16,10 +16,29 @@ const Schema       = mongoose.Schema;
 const postSchema   = require('./postModel');
 let Post = dbConnection.model('Post', postSchema, 'posts');
 
+const cardSchema   = require('./cardModel');
+let Card = dbConnection.model('Card', cardSchema, 'cards');
+
 // MIDDLEWARE
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+
+// CARD ROUTES
+app.get('/v2/cards', function(req, res, next) {
+  Card.find({}, ok(next, function(cards) {
+    res.send(cards);
+  }));
+});
+
+app.post('/v2/cards', function(req, res, next) {
+  let card = new Card(req.body);
+  card.validate(ok(next, function(error) {
+    card.save(ok(next, function(results) {
+      res.send(results);
+    }));
+  }));
+});
 
 
 // ROUTES
