@@ -3,6 +3,22 @@ const Schema   = mongoose.Schema;
 
 let enumRoles = ['user', 'admin', 'staff'];
 
+let positiveNum = function(value) {
+  if (value < 0) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+let lessThanNumber = function(value) {
+  if (value > 100) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
 const postSchema   = new Schema({
   title: {
     type: String,
@@ -10,9 +26,16 @@ const postSchema   = new Schema({
     trim: true,
     match: /^([\w ,.!?]{1,100})/,
     set: function(value) {
-      // can be used to remove all necessary stuff,
-      // like code or scripting
+      // can be used to filter out necessary stuff,
+      // like html or scripting
+      // fire when we trying to save
       return value.toUpperCase();
+    },
+    get: function(value) {
+      // that will allow us to work with value before
+      // send back. It can be used for security purposes
+      // fire when we trying to get something to the client
+      return value.toLowerCase();
     }
   },
 
@@ -34,7 +57,10 @@ const postSchema   = new Schema({
     required: true
   },
 
-  viewCounter: Number,
+  viewCounter: {
+    type: Number,
+    validate: positiveNum
+  },
   published: Boolean,
 
   followers: [Schema.Types.ObjectId],
@@ -59,5 +85,8 @@ const postSchema   = new Schema({
     }
   }]
 });
+
+// should precede declaration of schema
+postSchema.path('viewCounter').validate(lessThanNumber);
 
 module.exports = postSchema;
